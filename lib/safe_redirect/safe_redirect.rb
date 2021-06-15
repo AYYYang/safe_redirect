@@ -7,6 +7,10 @@ module SafeRedirect
     return true if valid_uri?(uri)
     return false if uri.host.nil?
 
+    if SafeRedirect.configuration.force_https
+      return false unless uri.scheme == "https"
+    end
+
     SafeRedirect.configuration.domain_whitelists.any? do |domain|
       if domain.include?("*")
         rf = domain.split(/(\*)/).map{ |f| f == "*" ? "[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9]?" : Regexp.escape(f) }

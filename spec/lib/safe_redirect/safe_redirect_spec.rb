@@ -23,6 +23,8 @@ module SafeRedirect
       'http://bl-ah.foo.org',
       'http://foo.org',
       'http://foo.org/',
+      'http://bar.com/safe',
+      'http://bar.com/safe/123',
       :back,
       ['some', 'object'],
       { controller: 'home', action: 'index' },
@@ -39,6 +41,9 @@ module SafeRedirect
       "https://www.bukalapak.com\n.evil.com",
       "http://blah.blah.foo.org",
       "///bit.ly/1hqE77G",
+      "http://bar.com",
+      'http://bar.com/unsafe',
+      'http://bar.com/unsafe/123',
     ]
 
     shared_examples_for 'nonlocal hosts' do |klass|
@@ -111,6 +116,58 @@ module SafeRedirect
       end
 
       it_should_behave_like 'nonlocal hosts', SafeRedirect
+    end
+
+
+    context "forcing HTTPS" do
+      before do
+        reset_config
+        load_config
+        allow(SafeRedirect.configuration).to receive(:force_https).and_return(true)
+        allow(SafeRedirect.configuration).to receive(:force_https).and_return(true)
+      end
+
+      HTTPS_SAFE_PATHS = [
+        'https://www.twitter.com',
+        'https://www.twitter.com/',
+        'https://www.twitter.com/123',
+        'https://bl-ah.foo.org',
+        'https://bl-ah.foo.org/',
+        'https://bl-ah.foo.org/query?param=123',
+        'https://foo.org',
+        'https://foo.org/query?param=123',
+        'https://bar.com/safe',
+        'https://bar.com/safe/123',
+      ]
+
+      HTTPS_UNSAFE_PATHS = [
+        '.twitter.com',
+        'twitter.com',
+        'www.twitter.com',
+        'http://www.twitter.com',
+        'http://www.twitter.com/',
+        'http://www.twitter.com/123',
+        '//bl-ah.foo.org',
+        '/',
+        'http://blah.foo.org',
+        'http://bl-ah.foo.org',
+        'http://foo.org',
+        'http://foo.org/',
+        'http://bar.com/safe',
+        'http://bar.com/safe/123',
+      ]
+
+      HTTPS_SAFE_PATHS.each do |path|
+        it "considers #{path} a safe path" do
+          expect(Controller.safe_path(path)).to eq(path)
+        end
+      end
+
+      HTTPS_UNSAFE_PATHS.each do |path|
+        it "considers #{path} an unsafe path" do
+          expect(Controller.safe_path(path)).to eq(SafeRedirect.configuration.default_path)
+        end
+      end
     end
   end
 end
