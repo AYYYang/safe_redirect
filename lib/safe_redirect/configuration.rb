@@ -12,7 +12,7 @@ module SafeRedirect
   end
 
   class Configuration
-    attr_accessor :default_path, :whitelist_local, :log
+    attr_accessor :default_path, :whitelist_local, :log, :force_https
     attr_reader :domain_whitelists
 
     def initialize
@@ -20,6 +20,7 @@ module SafeRedirect
       self.whitelist_local = false
       self.domain_whitelists = []
       self.log = false
+      self.force_https = false
     end
 
     def domain_whitelists=(whitelists)
